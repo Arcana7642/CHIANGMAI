@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">RideE Eco Score</string>
+    <string name="title_activity_main">RideE Eco Score</string>
+    <string name="package_name">com.ridee.ecoscore</string>
+    <string name="custom_url_scheme">com.ridee.ecoscore</string>
+</resources>

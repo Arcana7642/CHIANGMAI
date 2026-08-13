@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RideE Logger</title>
+    <meta
+      name="description"
+      content="RideE eco-driving logger for motorcycle delivery riders."
+    />
+    <link rel="icon" type="image/png" href="icon.png" />
+    <link rel="apple-touch-icon" href="icon.png" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="vendor/leaflet.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="stage">
+      <section class="phone" aria-label="RideE mobile app">
+        <section class="screen active" id="main" data-screen="main">
+          <article class="map-panel hidden" id="mapPanel" aria-label="Current ride map">
+            <div id="liveMap" aria-label="Live OpenStreetMap route"></div>
+            <div class="map-grid"></div>
+            <div class="map-road road-a"></div>
+            <div class="map-road road-b"></div>
+            <div class="map-road road-c"></div>
+            <div class="waterway"></div>
+            <div class="landmark temple">Wat Chedi</div>
+            <div class="landmark market">Muang Mai</div>
+            <button class="map-tool tool-top" aria-label="Center map">◎</button>
+            <button class="map-tool tool-mid" aria-label="Map layers">▣</button>
+            <button class="map-tool tool-bottom" aria-label="Current location">⌾</button>
+            <canvas id="routeCanvas" width="360" height="222" aria-hidden="true"></canvas>
+            <div class="location-pulse" id="locationPulse"></div>
+          </article>
+
+          <button class="ride-toggle" id="rideToggle" type="button">Start ride</button>
+
+          <div class="metrics">
+            <article><p>ECO SCORE</p><strong id="ecoScore">--</strong></article>
+            <article><p>DURATION</p><strong id="duration">00:00</strong></article>
+            <article><p>SPEED</p><strong id="speed">0.0 <small>km/h</small></strong></article>
+            <article><p>DISTANCE</p><strong id="distance">0.00 <small>km</small></strong></article>
+          </div>
+
+          <details class="ride-details">
+            <summary>Show details</summary>
+            <div class="details-grid">
+              <p>Average speed <strong id="averageSpeed">--</strong></p>
+              <p>Hard accel / brake <strong id="eventCount">0 / 0</strong></p>
+              <p>Samples <strong id="sampleCount">0</strong></p>
+              <p>GPS accuracy <strong id="gpsAccuracy">Waiting</strong></p>
+              <p>Motion sensor <strong id="motionStatus">Waiting</strong></p>
+            </div>
+          </details>
+        </section>
+
+        <section class="screen" id="history" data-screen="history">
+          <header class="subhead">
+            <button class="back" data-back aria-label="Back">‹</button>
+            <div>
+              <p class="eyebrow">SAVED LOGS</p>
+              <h2>History</h2>
+            </div>
+          </header>
+
+          <article class="score-card week-total">
+            <p class="eyebrow">LOCAL TRIPS</p>
+            <strong id="tripCount">0</strong>
+            <div>
+              <span>DISTANCE<br /><b id="totalDistance">0.00 km</b></span>
+              <span>SAMPLES<br /><b id="totalSamples">0</b></span>
+              <span>SCORE<br /><b>--</b></span>
+            </div>
+          </article>
+
+          <article class="history-empty" id="historyEmpty">
+            <p class="eyebrow">NO COMPLETED RIDES</p>
+            <p>Finished rides will appear here with blank eco scores until the scoring model is connected.</p>
+          </article>
+
+          <div class="trip-list" id="tripList"></div>
+        </section>
+
+        <section class="screen" id="trip" data-screen="trip">
+          <header class="subhead">
+            <button class="back" data-back aria-label="Back">‹</button>
+            <div>
+              <p class="eyebrow">TRIP DETAIL</p>
+              <h2 id="tripTitle">Trip log</h2>
+            </div>
+            <strong id="tripScore">--</strong>
+          </header>
+
+          <article class="route-card">
+            <p><span class="dot green-dot"></span>Started <small id="tripStarted">--</small></p>
+            <p><span class="dot red-dot"></span>Ended <small id="tripEnded">--</small></p>
+          </article>
+
+          <article class="chart-card">
+            <p class="eyebrow">SPEED SAMPLES</p>
+            <div class="sample-bars" id="sampleBars" aria-label="Recorded speed samples"></div>
+            <div class="legend">
+              <span><b class="green-dot"></b>GPS sample</span>
+              <span><b class="yellow-dot"></b>Motion</span>
+              <span><b class="red-dot"></b>Gap</span>
+            </div>
+          </article>
+
+          <article class="list-card events">
+            <p>Duration <strong id="tripDuration">00:00</strong></p>
+            <p>Distance <strong id="tripDistance">0.00 km</strong></p>
+            <p>Samples <strong id="tripSamples">0</strong></p>
+            <p>Average moving speed <strong id="tripAverageSpeed">--</strong></p>
+            <p>Acceleration score <strong id="tripAccelScore">--</strong></p>
+            <p>Braking score <strong id="tripDecelScore">--</strong></p>
+            <p>Eco score <strong id="tripEcoScore">-- / 100</strong></p>
+          </article>
+        </section>
+
+        <section class="screen" id="rewards" data-screen="rewards">
+          <article class="rank-card">
+            <strong>-- <small>points</small></strong>
+            <span><i style="width: 0%"></i></span>
+            <p>Rewards will unlock after completed rides can be scored.</p>
+          </article>
+
+          <article class="saving-card points">
+            <p class="eyebrow">INCENTIVE READY</p>
+            <div><strong>THB --</strong><span>Pending<br />score model</span></div>
+          </article>
+
+          <article class="list-card rewards-list">
+            <p>Fuel voucher <strong>Locked</strong><small>Needs valid eco score</small></p>
+            <p>Maintenance voucher <strong>Locked</strong><small>Needs verified rides</small></p>
+            <p>Safe riding bonus <strong>Locked</strong><small>Needs score policy</small></p>
+          </article>
+        </section>
+
+        <section class="screen settings-screen" id="settings" data-screen="settings">
+          <h2 class="settings-title">Settings</h2>
+          <div class="settings-list" aria-label="Settings options">
+            <button class="settings-row" type="button">
+              <span><b>My information</b><small>Somchai P. · +66 81 234 5678</small></span>
+              <i aria-hidden="true">›</i>
+            </button>
+            <button class="settings-row" type="button">
+              <span><b>Payment information</b><small>Visa ···· 4242</small></span>
+              <i aria-hidden="true">›</i>
+            </button>
+            <button class="settings-row" type="button">
+              <span><b>Notification settings</b><small>Ride summaries and rewards · On</small></span>
+              <i aria-hidden="true">›</i>
+            </button>
+            <button class="settings-row" type="button">
+              <span><b>Contact us</b><small>help@ridee.app</small></span>
+              <i aria-hidden="true">›</i>
+            </button>
+          </div>
+
+          <button class="logout-button" type="button">Log out</button>
+        </section>
+
+        <nav class="tabs" aria-label="Main menu">
+          <button class="active" data-go="main"><span></span>Main</button>
+          <button data-go="history"><span></span>History</button>
+          <button data-go="rewards"><span></span>Rewards</button>
+          <button data-go="settings"><span></span>Settings</button>
+        </nav>
+      </section>
+    </main>
+    <script src="vendor/leaflet.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

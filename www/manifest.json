@@ -1,0 +1,17 @@
+{
+  "name": "RideE Eco Score",
+  "short_name": "RideE",
+  "description": "Eco-driving score and fuel-saving prototype for motorcycle delivery riders.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#e9ebe5",
+  "theme_color": "#0b3a2e",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

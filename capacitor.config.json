@@ -1,0 +1,8 @@
+{
+  "appId": "com.ridee.ecoscore",
+  "appName": "RideE Eco Score",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}

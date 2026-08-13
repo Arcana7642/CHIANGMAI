@@ -1,0 +1,456 @@
+You are an expert in transportation engineering, motorcycle fuel efficiency, carbon-emissions accounting, and carbon credits.
+
+We are designing a B2B service for GrabFood delivery riders in Thailand. The service will use the speed time-series data from each delivery trip to calculate an eco-driving score and estimate fuel savings, cost savings, and carbon-emission reductions.
+
+Develop an evidence-based scoring methodology, calculation formulas, economic analysis, and presentation-ready results according to the following requirements.
+
+[Target and Operating Conditions]
+
+- Country: Thailand
+- Platform: GrabFood
+- Target users: Motorcycle delivery riders
+- Vehicle type: 110–125 cc internal-combustion motorcycles
+- Primary fuel: Gasohol 91 or Gasohol E10
+- Evaluation unit: One completed delivery
+- Evaluation interval: From completion of food pickup to completion of customer delivery
+- Representative delivery distance: 2 km
+- Deliveries per rider per day: 20
+- Working days per month: 26
+- Working days per year: 312
+- Available data: Timestamped speed time series
+- Use GPS accuracy and road-specific speed limits when available
+- Direct fuel-flow data will not be available during the initial stage
+- Fuel, financial, and carbon results must be identified as research-based estimates
+
+[Primary Objectives]
+
+For each delivery, calculate:
+
+1. Eco-driving score from 0 to 100
+2. Estimated fuel consumption
+3. Estimated fuel saved relative to baseline driving
+4. Estimated fuel-cost savings
+5. Estimated carbon emissions
+6. Estimated carbon-emission reductions
+7. Potential carbon-credit value, assuming the reduction becomes certified
+8. Recommended improvements to the rider’s driving behavior
+
+[Evidence and Research]
+
+Prioritize real-world motorcycle studies from Thailand or Southeast Asia. If available, use research involving Thai riders and approximately 113 cc motorcycles.
+
+Identify and cite the following values:
+
+- Fuel economy of eco-driving riders
+- Fuel economy of non-eco-driving riders
+- Average overall speed
+- Average running speed
+- Maximum speed
+- Average acceleration
+- Average deceleration
+- Maximum acceleration
+- Maximum deceleration
+- Cruising-time percentage
+- Acceleration- and deceleration-time percentages
+- Positive Kinetic Energy, or PKE
+- Fuel-consumption reduction
+- CO₂-emission reduction
+
+Clearly distinguish improvement in fuel economy from reduction in fuel consumed per kilometre.
+
+For example:
+
+- An improvement from 33.95 km/L to 50.44 km/L is a 48.6% improvement in fuel economy.
+- The corresponding reduction in fuel consumed per kilometre is approximately 32.7%.
+
+Prioritize peer-reviewed research, Thai government sources, TGO, and official Grab materials. Provide direct source links.
+
+[Speed Time-Series Preprocessing]
+
+Explain how to calculate the following from the speed time series:
+
+1. Conversion from km/h to m/s
+2. Application of a 3–5 second moving-average or median filter
+3. Acceleration derived from filtered speed
+4. Distance accounting for actual sampling intervals
+5. Removal of low-quality GPS observations
+6. Removal of unrealistic speeds and accelerations
+7. Prevention of single-sample threshold exceedances from being classified as events
+8. Merging of closely spaced observations into a single event
+
+Use the following basic equations:
+
+v_t(m/s) = v_t(km/h) / 3.6
+
+a_t = [v_t - v_(t-1)] / Δt
+
+D = Σ(v_t × Δt)
+
+Specify recommended data-quality and outlier thresholds.
+
+[Ideal Driving Conditions]
+
+Recommend suitable values for 110–125 cc motorcycles operating in Thai urban environments:
+
+- Ideal average overall speed
+- Ideal average running speed
+- Ideal cruising-speed range
+- Recommended maximum speed
+- Ideal acceleration range
+- Ideal deceleration range
+- Rapid-acceleration threshold
+- Rapid-deceleration threshold
+- Severe acceleration and deceleration thresholds
+- Cruising-state definition
+- Target cruising-time percentage
+
+Evaluate the following initial assumptions:
+
+- Average overall speed: approximately 28–33 km/h
+- Average running speed: approximately 30–35 km/h
+- Recommended cruising speed: 30–45 km/h
+- Recommended maximum speed: approximately 55 km/h
+- Ideal acceleration: approximately 0.5–1.0 m/s²
+- Ideal deceleration: approximately -0.5 to -1.0 m/s²
+- Acceleration penalty begins at 2.0 m/s²
+- Severe acceleration begins at 3.0 m/s²
+- Deceleration penalty begins at -2.0 m/s²
+- Severe deceleration begins at -3.0 m/s²
+- Cruising state: |a| ≤ 0.3 m/s² for at least five seconds
+- Target cruising time: at least 35–40% of moving time
+
+Do not accept these assumptions without review. Validate or revise them using research evidence and expected GPS error.
+
+[100-Point Eco-Driving Score]
+
+Design a 100-point score for each delivery.
+
+Initial weighting proposal:
+
+- Acceleration management: 35 points
+- Deceleration management: 20–25 points
+- Speed-limit compliance and steady driving: 30–40 points
+- Stops or potential idling: up to 15 points
+- Total: 100 points
+
+Because engine status cannot be determined from GPS speed alone, treat stopped time as an informational proxy or provide an alternative model that excludes it.
+
+Recognize rapid-acceleration and rapid-deceleration events only when the threshold persists for at least 1.5 seconds.
+
+Normalize event counts per 10 km:
+
+N_10km = N × 10 / D
+
+Example acceleration penalty:
+
+P_acc =
+2N_caution +
+4N_hard +
+7N_severe
+
+S_acc = max(0, 35 - P_acc)
+
+Example deceleration penalty:
+
+P_dec =
+1N_caution +
+3N_hard +
+5N_severe
+
+S_dec = max(0, 20 - P_dec)
+
+Define speeding as time spent at least 5 km/h over the road-specific speed limit.
+
+Do not penalize a rider solely because average speed is relatively high. Prioritize:
+
+- Compliance with legal speed limits
+- Frequency of rapid acceleration and deceleration
+- Cruising-time percentage
+- Unnecessary speed variation
+- PKE or energy associated with positive acceleration
+
+Provide a complete score equation and define upper and lower bounds for each component.
+
+[Conversion from Score to Fuel Savings]
+
+For the initial MVP, linearly connect the score to the research-based eco-driving and non-eco-driving fuel economies.
+
+Example values:
+
+- Non-eco-driving fuel economy: 33.95 km/L
+- Eco-driving fuel economy: 50.44 km/L
+- Score 0: Non-eco-driving level
+- Score 100: Eco-driving level
+
+Baseline fuel consumption:
+
+F_base = D / FE_non_eco
+
+Fuel consumption at a score of 100:
+
+F_eco = D / FE_eco
+
+Estimated fuel consumption at score S:
+
+F_estimated =
+F_base -
+(S / 100) × (F_base - F_eco)
+
+Estimated fuel saved:
+
+ΔF =
+(S / 100) × D ×
+(1 / FE_non_eco - 1 / FE_eco)
+
+Estimated fuel-saving percentage:
+
+R_F =
+(1 - FE_non_eco / FE_eco) × (S / 100)
+
+Clearly state that this linear mapping is an MVP assumption. Explain how it should later be replaced by a model calibrated using actual fuel-flow, refuelling, or controlled validation data.
+
+[Fuel-Cost Calculations]
+
+If the fuel price is P in THB/L:
+
+Fuel cost = Fuel consumption × P
+
+Fuel-cost savings:
+
+ΔC = ΔF × P
+
+Find the latest official Thai Gasohol 91 retail price. State the date and source. Because the price changes over time, recommend a system design that regularly updates the fuel-price input.
+
+[Carbon-Emission Calculations]
+
+Prioritize the official Gasohol E10 or Gasohol 91 emission factor published by the Thailand Greenhouse Gas Management Organization, or TGO.
+
+If the emission factor is EF in kgCO₂e/L:
+
+E = F × EF
+
+Avoided emissions:
+
+ΔE = ΔF × EF
+
+In grams of CO₂e:
+
+ΔE_g = ΔF × EF × 1,000
+
+Clarify whether the selected emission factor covers only fuel combustion or full life-cycle emissions.
+
+[Example for One 2 km Delivery]
+
+Compare eco-driving with non-eco-driving for a 2 km delivery.
+
+Calculate:
+
+- Non-eco-driving fuel consumption
+- Eco-driving fuel consumption
+- Fuel saved
+- Fuel-saving percentage
+- Non-eco-driving fuel cost
+- Eco-driving fuel cost
+- Fuel-cost savings
+- Non-eco-driving carbon emissions
+- Eco-driving carbon emissions
+- Avoided carbon emissions
+
+Also calculate the estimated fuel, cost, and carbon savings for a 2 km delivery with an eco-driving score of 80.
+
+[Effects for One Rider]
+
+Use the following operating assumptions:
+
+- 20 deliveries per day
+- 2 km per delivery
+- 26 working days per month
+- 312 working days per year
+
+Present daily, monthly, and annual values for:
+
+- Number of deliveries
+- Total distance
+- Fuel saved
+- Fuel-cost savings
+- Carbon-emission reductions
+
+Provide a presentation-ready statement such as:
+
+“A rider who follows eco-driving practices could save approximately THB X per day, THB Y per month, and THB Z per year in fuel costs, while reducing annual emissions by approximately X kgCO₂e.”
+
+[Comparison with Faster and More Aggressive Driving]
+
+Use the difference in average speed between eco-driving and non-eco-driving to calculate the time difference for a 2 km delivery.
+
+Initial research values:
+
+- Eco-driving average speed: 30.39 km/h
+- Non-eco-driving average speed: 33.90 km/h
+
+Travel-time equation:
+
+T = D / V × 60
+
+Calculate:
+
+- Travel time for a 2 km eco-driving trip
+- Travel time for a 2 km faster trip
+- Time saved per delivery
+- Total time saved across 20 deliveries per day
+- Number of existing deliveries required to accumulate enough saved time for one additional delivery lasting 10, 15, 20, 25, or 30 minutes
+
+Evaluate the following proposition quantitatively:
+
+- If aggressive driving genuinely produces one additional delivery, its short-term income may exceed the value of fuel savings.
+- However, if the difference is only about 25 seconds per 2 km delivery, 20 deliveries produce only about eight minutes of theoretical time savings.
+- Once order assignment, restaurant waiting, pickup, and handover time are considered, completing an additional order using only this time is unlikely.
+- If no additional delivery occurs, eco-driving is more profitable because it produces measurable fuel savings.
+- Saved seconds are distributed across multiple deliveries and do not necessarily become one continuous block of available time.
+
+Find an official or reliable estimate of GrabFood rider income per delivery in Thailand.
+
+If rider income is assumed to be THB 50 per delivery, compare:
+
+- Gross income from one additional delivery
+- Fuel cost of the additional 2 km
+- Net income from the additional delivery
+- Daily fuel savings from 20 eco-driven deliveries
+- Financial difference between the alternatives
+
+Clearly separate the following two cases:
+
+1. An additional delivery is actually completed.
+2. Faster driving does not result in an additional delivery.
+
+[Grab Thailand Fleet-Level Effects]
+
+Determine whether Grab officially publishes the number of active GrabFood riders in Thailand.
+
+If no current official number is available, calculate three scenarios:
+
+- Conservative: 90,000 active internal-combustion riders
+- Base case: 100,000 active riders
+- Registered-rider scenario: 120,000 riders
+
+For each scenario, calculate annual:
+
+- Total deliveries
+- Total distance
+- Fuel saved
+- Fuel-cost savings
+- Carbon-emission reductions
+- Potential number of carbon credits
+- Potential carbon-credit revenue
+
+Also calculate a realistic implementation scenario using:
+
+- Participation rate: 70%
+- Valid-data rate: 90%
+- Eco-driving achievement rate: 60%
+
+Certified or eligible reduction estimate:
+
+Eligible reductions =
+Theoretical reductions
+× Participation rate
+× Valid-data rate
+× Achievement rate
+
+Explain that EV riders and EV vehicles must be excluded from internal-combustion fuel-saving calculations.
+
+[Carbon-Credit Business Feasibility]
+
+For Thailand’s T-VER market, investigate:
+
+- Latest average carbon-credit price
+- Minimum, maximum, or project-category price range
+- Unit represented by one carbon credit
+- Project registration and certification process
+- External validation and verification requirements
+- Certification fees
+- Applicable transport or internal-combustion-engine efficiency methodologies
+- Whether an eco-driving behavior project could qualify
+- Ownership of emission reductions
+- Prevention of double counting
+- Additionality
+- Baseline definition
+- Monitoring, reporting, and verification, or MRV
+
+Calculate potential carbon-credit value under these price scenarios:
+
+- THB 39.33/tCO₂e
+- THB 84.43/tCO₂e
+- THB 174.52/tCO₂e
+- THB 300/tCO₂e
+- THB 500/tCO₂e
+- THB 1,000/tCO₂e
+
+Clearly distinguish:
+
+- Unverified estimated reductions
+- Certified carbon credits
+- Theoretical market value
+- Gross revenue before registration, verification, and operating expenses
+- Actual net revenue
+
+Compare carbon-credit revenue with riders’ fuel-cost savings and identify the primary source of economic value.
+
+[B2B Business Model and Rider Incentives]
+
+Assess whether carbon-credit value alone would be sufficient to change rider behavior.
+
+Evaluate the following benefit structure:
+
+Rider benefit =
+Fuel-cost savings
++ Corporate eco-driving incentive
++ Safety-related benefit
+
+If the corporate customer provides an eco-driving incentive of THB 0.5–1.0 per delivery, calculate:
+
+- Total benefit per delivery
+- Daily rider benefit
+- Monthly rider benefit
+- Annual rider benefit
+- Total incentive budget required for the Grab Thailand rider population
+
+Frame the B2B value proposition around:
+
+1. Rider fuel-cost savings
+2. Carbon-emission reductions
+3. Potential safety improvements and reduced crash risk
+4. ESG measurement and reporting
+5. Certified carbon credits or independently verified reductions
+6. Rider participation and behavioral-change data
+
+[Required Output Structure]
+
+Organize the final answer as follows:
+
+1. Executive Summary
+2. Key Assumptions
+3. Research Evidence
+4. Ideal Speed, Acceleration, and Deceleration
+5. Speed Time-Series Preprocessing
+6. 100-Point Scoring Formula
+7. Conversion from Score to Fuel, Cost, and Carbon
+8. Example for One Delivery
+9. Daily, Monthly, and Annual Effects for One Rider
+10. Faster Driving versus Additional-Delivery Income
+11. Grab Thailand Fleet-Level Effects
+12. Carbon-Credit Value and Certification Feasibility
+13. B2B Business Model and Rider Incentives
+14. Limitations and Validation Plan
+15. Presentation-Ready Tables and Key Statements
+16. Sources and Direct Links
+
+Show units and equations for every calculation.
+
+Clearly label every numerical value as one of the following:
+
+- Official data
+- Research measurement
+- Service-design assumption
+
+Do not present estimates as measured facts. Label them as “estimated,” “assumed,” or “research-based estimates.” Recheck all time-sensitive fuel prices, regulations, rider counts, and carbon-market data as of the date of the analysis.
